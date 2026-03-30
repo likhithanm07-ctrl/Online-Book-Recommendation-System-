@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}Manage Books — BookNest Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <h2>📚 BookNest</h2>
+            <p>Admin Panel</p>
+        </div>
+        <nav>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="admin-nav-item">
+                <span class="icon">🏠</span> Dashboard
+            </a>
+            <a href="{{ url_for('admin.manage_books') }}" class="admin-nav-item active">
+                <span class="icon">📖</span> Manage Books
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="admin-nav-item">
+                <span class="icon">👥</span> Manage Users
+            </a>
+            <a href="{{ url_for('admin.admin_logout') }}" class="admin-nav-item" style="color:var(--danger);">
+                <span class="icon">🚪</span> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">📖 Manage Books</h1>
+                <p class="admin-subtitle">{{ books|length }} book(s) in library</p>
+            </div>
+        </div>
+
+        <!-- Add Book Form -->
+        <div class="card" style="padding:2rem;margin-bottom:2rem;">
+            <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;margin-bottom:1.5rem;">
+                ➕ Add New Book
+            </h3>
+            <form method="POST" action="{{ url_for('admin.manage_books') }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Title *</label>
+                        <input type="text" name="title" class="form-control" placeholder="Book title" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Author *</label>
+                        <input type="text" name="author" class="form-control" placeholder="Author name" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Genre *</label>
+                        <input type="text" name="genre" class="form-control" placeholder="e.g. Fantasy, Science Fiction"
+                            required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Year Published</label>
+                        <input type="number" name="year" class="form-control" placeholder="e.g. 2023" min="1000"
+                            max="2099" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" name="isbn" class="form-control" placeholder="978-XXXXXXXXX" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Cover Image URL</label>
+                        <input type="url" name="cover_url" class="form-control" placeholder="https://..." />
+                    </div>
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Description *</label>
+                    <textarea name="description" class="form-control" rows="3" placeholder="Brief book description…"
+                        required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">➕ Add Book</button>
+            </form>
+        </div>
+
+        <!-- Books Table -->
+        {% if books %}
+        <div class="table-wrapper">
+            <table id="books-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Genre</th>
+                        <th>Year</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for book in books %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td class="td-title">{{ book.title }}</td>
+                        <td>{{ book.author }}</td>
+                        <td><span class="badge" style="background:rgba(108,99,255,0.15);color:var(--accent-light);">{{
+                                book.genre }}</span></td>
+                        <td>{{ book.year or '—' }}</td>
+                        <td><span class="text-gold fw-600">★ {{ "%.1f"|format(book.avg_rating | default(0)) }}</span>
+                            <span class="text-muted" style="font-size:0.75rem;">({{ (book.ratings | default([]))|length
+                                }})</span>
+                        </td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a href="{{ url_for('admin.edit_book', book_id=book._id) }}"
+                                    class="btn btn-outline btn-sm">✏️ Edit</a>
+                                <form method="POST" action="{{ url_for('admin.delete_book_admin', book_id=book._id) }}"
+                                    class="delete-form" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">📚</div>
+            <h3>No books yet</h3>
+            <p>Add your first book using the form above, or run <code>python seed.py</code> to load sample books.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

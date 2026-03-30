@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% block title %}Admin Login — BookNest{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-box fade-in">
+        <div class="auth-logo">
+            <div class="icon">🔐</div>
+            <h1>Admin Portal</h1>
+            <p>BookNest Administration Panel</p>
+        </div>
+
+        <div style="background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.3);
+                border-radius:8px;padding:0.9rem 1rem;margin-bottom:1.5rem;font-size:0.85rem;
+                color:var(--accent-light);">
+            🛡️ Restricted access — authorised personnel only
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.admin_login') }}" autocomplete="on">
+            <div class="form-group">
+                <label class="form-label" for="email">Admin Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="admin@example.com"
+                    required autocomplete="email" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Admin Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
+                    required autocomplete="current-password" />
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">
+                🔐 Admin Login
+            </button>
+        </form>
+
+        <div class="auth-footer mt-3">
+            Not an admin? <a href="{{ url_for('auth.login') }}">← User Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

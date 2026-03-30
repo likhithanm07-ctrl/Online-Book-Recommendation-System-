@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard — BookNest{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════ SIDEBAR OVERLAY (mobile) ══════════════ -->
+<div class="sb-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- ══════════════ USER SIDEBAR ══════════════ -->
+<aside class="user-sidebar" id="user-sidebar">
+
+    <!-- Profile block -->
+    <div class="user-sb-profile">
+        <div class="user-avatar">{{ user.username[0].upper() }}</div>
+        <div class="user-sb-info">
+            <p class="user-sb-name">{{ user.username }}</p>
+            <p class="user-sb-email" title="{{ user.email }}">{{ user.email }}</p>
+        </div>
+        <button class="sb-close-btn" onclick="closeSidebar()">✕</button>
+    </div>
+
+    <!-- Main nav -->
+    <nav class="user-sb-nav">
+        <p class="sb-nav-section">Navigation</p>
+        <a href="{{ url_for('books.dashboard') }}"
+            class="user-sb-link {% if not request.args.get('q') %}active{% endif %}">
+            <span class="sb-link-icon">🏠</span> Home
+        </a>
+        <a href="{{ url_for('books.dashboard') }}?q=" class="user-sb-link">
+            <span class="sb-link-icon">🔍</span> Search Books
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="user-sb-link logout-link">
+            <span class="sb-link-icon">🚪</span> Logout
+        </a>
+    </nav>
+
+    <!-- Genre shortcuts -->
+    {% if genres %}
+    <div class="user-sb-genres">
+        <p class="sb-nav-section">Browse by Genre</p>
+        {% for g in genres %}
+        <a href="{{ url_for('books.by_genre', genre=g) }}" class="user-sb-genre-link">
+            <span class="sb-genre-dot"></span>{{ g }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Stats mini card -->
+    <div class="user-sb-stats">
+        <p class="sb-nav-section">Your Stats</p>
+        <div class="user-sb-stat-row">
+            <span>📖 Books Rated</span>
+            <strong>{{ user.ratings|length if user.ratings else 0 }}</strong>
+        </div>
+    </div>
+</aside>
+
+<!-- ══════════════ MAIN WRAPPER ══════════════ -->
+<div class="user-layout" id="user-layout">
+
+    <!-- ══ PAGE HERO / SEARCH BAR ══ -->
+    <div class="page-hero">
+        <div class="uc">
+            <div class="d-flex align-center justify-between" style="flex-wrap:wrap;gap:1rem;">
+
+                <!-- Hamburger + greeting -->
+                <div class="d-flex align-center gap-2">
+                    <button class="hamburger-btn" id="hamburger-btn" onclick="openSidebar()" title="Open Menu">
+                        <span></span><span></span><span></span>
+                    </button>
+                    <div>
+                        <h1 class="section-title">
+                            👋 Hello, <span>{{ user.username }}</span>!
+                        </h1>
+                        <p class="section-subtitle">Here are books picked just for you</p>
+                    </div>
+                </div>
+
+                <!-- Search bar -->
+                <form method="GET" action="{{ url_for('books.dashboard') }}" style="display:flex;align-items:center;">
+                    <div class="search-bar">
+                        <span style="color:var(--text-muted);">🔍</span>
+                        <input type="text" id="search-input" name="q" value="{{ query }}"
+                            placeholder="Search title, author, genre…" autocomplete="off" />
+                        {% if query %}
+                        <a href="{{ url_for('books.dashboard') }}" class="btn btn-sm btn-outline">✕ Clear</a>
+                        {% else %}
+                        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CONTENT ══ -->
+    <div class="uc section">
+
+        {% if not query %}
+        <!-- ══════════════ RECOMMENDATION TABS ══════════════ -->
+        <div class="rec-tabs-wrap">
+
+            <div class="rec-tabs-header">
+                <h2 class="section-title" style="margin:0;">Recommendations</h2>
+                <p class="section-subtitle" style="margin:0.2rem 0 0;">Pick a mode to explore</p>
+            </div>
+
+            <div class="rec-tabs" role="tablist">
+
+                <a href="{{ url_for('books.dashboard') }}?rec=hybrid"
+                    class="rec-tab {% if rec_type == 'hybrid' %}active{% endif %}"
+                    title="Best of both content-based and collaborative filtering">
+                    <span class="rec-tab-icon">🔀</span>
+                    <span class="rec-tab-label">Hybrid</span>
+                    <span class="rec-tab-badge">{{ hybrid_books|length }}</span>
+                </a>
+
+                <a href="{{ url_for('books.dashboard') }}?rec=collaborative"
+                    class="rec-tab {% if rec_type == 'collaborative' %}active{% endif %}"
+                    title="Based on readers who liked similar books">
+                    <span class="rec-tab-icon">👥</span>
+                    <span class="rec-tab-label">Collaborative</span>
+                    <span class="rec-tab-badge">{{ collab_books|length }}</span>
+                </a>
+
+                <a href="{{ url_for('books.dashboard') }}?rec=content"
+                    class="rec-tab {% if rec_type == 'content' %}active{% endif %}"
+                    title="Matches your favourite genres and authors">
+                    <span class="rec-tab-icon">🎯</span>
+                    <span class="rec-tab-label">Content-Based</span>
+                    <span class="rec-tab-badge">{{ content_books|length }}</span>
+                </a>
+
+                <a href="{{ url_for('books.dashboard') }}?rec=trending"
+                    class="rec-tab {% if rec_type == 'trending' %}active{% endif %}"
+                    title="What the community is rating right now">
+                    <span class="rec-tab-icon">🔥</span>
+                    <span class="rec-tab-label">Trending</span>
+                    <span class="rec-tab-badge">{{ trending_books|length }}</span>
+                </a>
+
+            </div>
+
+            <!-- Tab description bar -->
+            <div class="rec-tab-desc">
+                {% if rec_type == 'hybrid' %}
+                <span>🔀</span> <strong>Hybrid</strong> — A smart blend of your taste profile and what similar readers
+                enjoy, giving you the best of both worlds.
+                {% elif rec_type == 'collaborative' %}
+                <span>👥</span> <strong>Collaborative</strong> — Readers who rated similar books to you also loved
+                these. Discover new favourites through the crowd.
+                {% elif rec_type == 'content' %}
+                <span>🎯</span> <strong>Content-Based</strong> — Matched to your favourite genres and authors from books
+                you've already rated highly.
+                {% elif rec_type == 'trending' %}
+                <span>🔥</span> <strong>Trending</strong> — The most-rated and highest-scoring books in our community
+                right now.
+                {% endif %}
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ══ Search results heading ══ -->
+        {% if query %}
+        <div class="d-flex align-center justify-between mb-2">
+            <div>
+                <h2 class="section-title">{{ title }}</h2>
+                <p class="section-subtitle">{{ books|length }} result(s) found</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ══ BOOK GRID ══ -->
+        {% macro book_card(book) %}
+        <a href="{{ url_for('books.book_detail', book_id=book._id) }}" class="book-card">
+            {% set cover_src = book.cover_url if book.cover_url else 'https://covers.openlibrary.org/b/title/' ~
+            book.title ~ '-L.jpg' %}
+            <div class="book-cover-wrap">
+                <img class="book-card-cover" src="{{ cover_src }}" alt="{{ book.title }}" loading="lazy"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="book-cover-initial" style="display:none;">
+                    <span class="bci-letter">{{ book.title[0].upper() }}</span>
+                    <span class="bci-title">{{ book.title }}</span>
+                </div>
+            </div>
+            <div class="book-card-body">
+                <div class="book-card-top-row">
+                    <span class="book-card-genre">{{ book.genre }}</span>
+                    {% if book.year %}<span class="book-card-year">{{ book.year }}</span>{% endif %}
+                </div>
+                <h3 class="book-card-title">{{ book.title }}</h3>
+                <p class="book-card-author">by {{ book.author }}</p>
+                {% if book.description %}
+                <p class="book-card-desc">{{ book.description }}</p>
+                {% endif %}
+                <div class="book-card-footer">
+                    <div class="star-rating-display">
+                        <span class="stars">
+                            {% set r = (book.avg_rating | default(0)) | float %}
+                            {% for i in range(1, 6) %}{% if i <= r %}★{% elif i - 0.5 <=r %}½{% else %}☆{% endif %}{%
+                                endfor %} </span>
+                                <span class="rating-num">
+                                    {{ "%.1f"|format(book.avg_rating | default(0)) }}
+                                    {% if book.ratings %}({{ book.ratings|length }}){% endif %}
+                                </span>
+                    </div>
+                    <span class="book-card-cta">View Details →</span>
+                </div>
+            </div>
+        </a>
+        {% endmacro %}
+
+        {% if books %}
+        <div class="books-grid">
+            {% for book in books %}
+            {{ book_card(book) }}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">
+                {% if rec_type == 'collaborative' %}👥
+                {% elif rec_type == 'trending' %}🔥
+                {% elif rec_type == 'content' %}🎯
+                {% else %}🔍{% endif %}
+            </div>
+            {% if query %}
+            <h3>No books found</h3>
+            <p>Try a different search term or browse by genre above.</p>
+            <a href="{{ url_for('books.dashboard') }}" class="btn btn-primary mt-3">Back to Home</a>
+            {% elif rec_type == 'collaborative' %}
+            <h3>Not enough shared ratings yet</h3>
+            <p>Rate more books so we can find readers like you. Meanwhile, check out <a
+                    href="?rec=trending">Trending</a>!</p>
+            {% elif rec_type == 'content' %}
+            <h3>No ratings yet</h3>
+            <p>Rate a few books to unlock content-based recommendations. Or explore <a href="?rec=trending">Trending</a>
+                first!</p>
+            {% else %}
+            <h3>No books found</h3>
+            <p>It seems like the library is empty. Ask an admin to add some books!</p>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- ══════════════ TOP RATED SECTION ══════════════ -->
+        {% if not query and top_books %}
+        <div class="mt-4">
+            <h2 class="section-title mb-1">🏆 Top Rated Books</h2>
+            <p class="section-subtitle">Highest rated by our community</p>
+            <div class="books-grid">
+                {% for book in top_books %}
+                {{ book_card(book) }}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+    </div><!-- /uc section -->
+</div><!-- /user-layout -->
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function openSidebar() {
+        document.getElementById('user-sidebar').classList.add('open');
+        document.getElementById('sb-overlay').classList.add('show');
+        document.getElementById('hamburger-btn').classList.add('active');
+    }
+    function closeSidebar() {
+        document.getElementById('user-sidebar').classList.remove('open');
+        document.getElementById('sb-overlay').classList.remove('show');
+        document.getElementById('hamburger-btn').classList.remove('active');
+    }
+    // Close on Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSidebar(); });
+</script>
+{% endblock %}

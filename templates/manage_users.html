@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Manage Users — BookNest Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <h2>📚 BookNest</h2>
+            <p>Admin Panel</p>
+        </div>
+        <nav>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="admin-nav-item">
+                <span class="icon">🏠</span> Dashboard
+            </a>
+            <a href="{{ url_for('admin.manage_books') }}" class="admin-nav-item">
+                <span class="icon">📖</span> Manage Books
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="admin-nav-item active">
+                <span class="icon">👥</span> Manage Users
+            </a>
+            <a href="{{ url_for('admin.admin_logout') }}" class="admin-nav-item" style="color:var(--danger);">
+                <span class="icon">🚪</span> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">👥 Manage Users</h1>
+                <p class="admin-subtitle">{{ users|length }} registered user(s)</p>
+            </div>
+        </div>
+
+        {% if users %}
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Avatar</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Ratings Given</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td>
+                            <div style="width:38px;height:38px;border-radius:50%;
+                          background:linear-gradient(135deg,var(--accent),var(--accent-light));
+                          display:flex;align-items:center;justify-content:center;
+                          font-weight:700;font-size:1rem;color:white;">
+                                {{ u.username[0].upper() }}
+                            </div>
+                        </td>
+                        <td class="td-title">{{ u.username }}</td>
+                        <td style="color:var(--text-secondary);">{{ u.email }}</td>
+                        <td>
+                            <span style="background:rgba(108,99,255,0.15);color:var(--accent-light);
+                           padding:0.2rem 0.6rem;border-radius:4px;font-size:0.8rem;font-weight:600;">
+                                {{ u.ratings|length if u.ratings else 0 }}
+                            </span>
+                        </td>
+                        <td class="text-muted" style="font-size:0.82rem;">
+                            {{ u.created_at.strftime('%b %d, %Y') if u.created_at else '—' }}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.delete_user_admin', user_id=u._id) }}"
+                                class="delete-form" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm">🗑️ Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="icon">👥</div>
+            <h3>No users yet</h3>
+            <p>Users will appear here once they register on the platform.</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+{% endblock %}

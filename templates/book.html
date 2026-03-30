@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ book.title }} — BookNest{% endblock %}
+
+{% block content %}
+<div class="container section">
+    <a href="{{ url_for('books.dashboard') }}" class="btn btn-outline btn-sm mb-3">← Back to Dashboard</a>
+
+    <div class="book-detail-hero">
+        <!-- Cover -->
+        <div class="book-detail-cover">
+            {% set cover_src = book.cover_url if book.cover_url else 'https://covers.openlibrary.org/b/title/' ~
+            book.title ~ '-L.jpg' %}
+            <img src="{{ cover_src }}" alt="{{ book.title }}"
+                style="width:100%;border-radius:var(--radius);box-shadow:var(--shadow-lg);"
+                onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+            <div class="book-detail-cover-initial" style="display:none;">
+                <span style="font-size:5rem;line-height:1;">{{ book.title[0].upper() }}</span>
+                <span
+                    style="font-size:0.85rem;color:var(--text-muted);text-align:center;padding:0 1rem;line-height:1.4;">{{
+                    book.title }}</span>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="book-detail-info">
+            <span class="book-card-genre" style="font-size:0.85rem;padding:0.3rem 0.9rem;">{{ book.genre }}</span>
+            <h1 class="book-detail-title mt-2">{{ book.title }}</h1>
+            <p class="book-detail-author">by <strong>{{ book.author }}</strong></p>
+
+            <div class="book-meta mb-2">
+                {% if book.year %}
+                <div class="book-meta-item">
+                    <span class="book-meta-label">Published</span>
+                    <span class="book-meta-value">{{ book.year }}</span>
+                </div>
+                {% endif %}
+                {% if book.isbn %}
+                <div class="book-meta-item">
+                    <span class="book-meta-label">ISBN</span>
+                    <span class="book-meta-value" style="font-size:0.8rem;">{{ book.isbn }}</span>
+                </div>
+                {% endif %}
+                <div class="book-meta-item">
+                    <span class="book-meta-label">Community Rating</span>
+                    <span class="book-meta-value text-gold">
+                        ★ {{ "%.1f"|format(book.avg_rating | default(0)) }} / 5
+                        {% if book.ratings %}({{ book.ratings|length }} ratings){% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <p class="book-description mb-3">{{ book.description }}</p>
+
+            <!-- Rate this book -->
+            <div class="card" style="padding:1.5rem;max-width:380px;">
+                <p class="form-label mb-1">
+                    {% if user_rating %}⭐ Your Rating: {{ user_rating }}/5{% else %}⭐ Rate This Book{% endif %}
+                </p>
+                <form method="POST" action="{{ url_for('books.rate_book', book_id=book._id) }}" id="rating-form">
+                    <div class="star-input" id="stars">
+                        {% for i in [5,4,3,2,1] %}
+                        <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" {% if user_rating==i
+                            %}checked{% endif %} />
+                        <label for="star{{ i }}" title="{{ i }} star{{ 's' if i != 1 }}">★</label>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-gold btn-sm mt-2">Submit Rating</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Section -->
+    <div class="mt-4">
+        <h2 class="section-title mb-1">💬 Reader Reviews</h2>
+        <p class="section-subtitle">Share your thoughts about this book</p>
+
+        <!-- Submit Feedback Form -->
+        <div class="card mb-3" style="padding:1.5rem;max-width:680px;">
+            <form method="POST" action="{{ url_for('books.submit_feedback', book_id=book._id) }}">
+                <label class="form-label mb-1" for="feedback-input">✍️ Write a Review</label>
+                <textarea id="feedback-input" name="feedback" rows="4" class="form-control"
+                    placeholder="What did you think about this book? Share your experience..." maxlength="1000"
+                    style="width:100%;padding:0.75rem;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg-card);color:var(--text-primary);font-size:0.95rem;resize:vertical;font-family:inherit;"></textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.75rem;">
+                    <span style="font-size:0.8rem;color:var(--text-muted);">Max 1000 characters</span>
+                    <button type="submit" class="btn btn-primary btn-sm">Submit Review</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Existing Feedbacks -->
+        {% if feedbacks %}
+        <div style="max-width:680px;">
+            {% for fb in feedbacks %}
+            <div class="card mb-2" style="padding:1.25rem 1.5rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                    <strong style="color:var(--accent);">👤 {{ fb.username }}</strong>
+                    <span style="font-size:0.78rem;color:var(--text-muted);">
+                        {{ fb.created_at.strftime('%b %d, %Y · %I:%M %p') }}
+                    </span>
+                </div>
+                <p style="margin:0;line-height:1.6;color:var(--text-primary);">{{ fb.text }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:var(--text-muted);font-style:italic;max-width:680px;">
+            No reviews yet — be the first to share your thoughts!
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- Similar Books -->
+    {% if similar %}
+    <div class="mt-4">
+        <h2 class="section-title mb-1">📚 Similar Books</h2>
+        <p class="section-subtitle">More in {{ book.genre }}</p>
+        <div class="books-grid">
+            {% for b in similar %}
+            <a href="{{ url_for('books.book_detail', book_id=b._id) }}" class="book-card">
+                {% if b.cover_url %}
+                <img class="book-card-cover" src="{{ b.cover_url }}" alt="{{ b.title }}"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='flex';" />
+                <div class="book-cover-placeholder" style="display:none;">📖</div>
+                {% else %}
+                <div class="book-cover-placeholder">📖</div>
+                {% endif %}
+                <div class="book-card-body">
+                    <span class="book-card-genre">{{ b.genre }}</span>
+                    <h3 class="book-card-title">{{ b.title }}</h3>
+                    <p class="book-card-author">by {{ b.author }}</p>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

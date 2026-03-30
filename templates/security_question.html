@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% block title %}Security Question — BookNest{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-box fade-in">
+        <div class="auth-logo">
+            <div class="icon">🛡️</div>
+            <h1>Security Check</h1>
+            <p>Answer your security question to continue.</p>
+        </div>
+
+        <!-- Step indicator -->
+        <div class="step-indicator">
+            <span class="step done">✓</span>
+            <span class="step-line done"></span>
+            <span class="step active">2</span>
+            <span class="step-line"></span>
+            <span class="step">3</span>
+        </div>
+        <p class="step-label">Step 2 of 3 — Answer your security question</p>
+
+        <form method="POST" action="{{ url_for('auth.security_question') }}">
+            <div class="form-group">
+                <label class="form-label">Your Security Question</label>
+                <div class="security-question-box">{{ question }}</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="security_answer">Your Answer</label>
+                <input type="text" id="security_answer" name="security_answer" class="form-control"
+                    placeholder="Type your answer…" required autocomplete="off" />
+                <small class="form-hint">Answer is not case-sensitive.</small>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">
+                ✅ Verify Answer
+            </button>
+        </form>
+
+        <div class="auth-footer mt-2">
+            <a href="{{ url_for('auth.forgot_password') }}">← Use a different email</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .step-indicator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        margin: 1.2rem 0 0.3rem;
+    }
+
+    .step {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--surface, #1e1e2e);
+        border: 2px solid var(--border, #444);
+        color: var(--text-muted, #888);
+        font-size: 0.85rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s, border-color 0.3s;
+    }
+
+    .step.done {
+        background: #22c55e;
+        border-color: #22c55e;
+        color: #fff;
+    }
+
+    .step.active {
+        background: var(--primary, #7c6af7);
+        border-color: var(--primary, #7c6af7);
+        color: #fff;
+        box-shadow: 0 0 0 4px rgba(124, 106, 247, .25);
+    }
+
+    .step-line {
+        height: 2px;
+        width: 48px;
+        background: var(--border, #444);
+    }
+
+    .step-line.done {
+        background: #22c55e;
+    }
+
+    .step-label {
+        text-align: center;
+        font-size: .8rem;
+        color: var(--text-muted, #888);
+        margin-bottom: 1rem;
+    }
+
+    .security-question-box {
+        background: var(--surface-alt, #252535);
+        border: 1px solid var(--border, #444);
+        border-radius: 10px;
+        padding: 0.75rem 1rem;
+        font-style: italic;
+        color: var(--text, #ccc);
+        margin-top: 0.25rem;
+    }
+
+    .form-hint {
+        display: block;
+        font-size: 0.75rem;
+        color: var(--text-muted, #888);
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}

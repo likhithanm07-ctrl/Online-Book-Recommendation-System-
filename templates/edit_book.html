@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Edit Book — BookNest Admin{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    <aside class="admin-sidebar">
+        <div class="brand">
+            <h2>📚 BookNest</h2>
+            <p>Admin Panel</p>
+        </div>
+        <nav>
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="admin-nav-item">
+                <span class="icon">🏠</span> Dashboard
+            </a>
+            <a href="{{ url_for('admin.manage_books') }}" class="admin-nav-item active">
+                <span class="icon">📖</span> Manage Books
+            </a>
+            <a href="{{ url_for('admin.manage_users') }}" class="admin-nav-item">
+                <span class="icon">👥</span> Manage Users
+            </a>
+            <a href="{{ url_for('admin.admin_logout') }}" class="admin-nav-item" style="color:var(--danger);">
+                <span class="icon">🚪</span> Logout
+            </a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <div class="admin-header">
+            <div>
+                <h1 class="admin-title">✏️ Edit Book</h1>
+                <p class="admin-subtitle">Updating: {{ book.title }}</p>
+            </div>
+            <a href="{{ url_for('admin.manage_books') }}" class="btn btn-outline btn-sm">← Back to Books</a>
+        </div>
+
+        <div class="card" style="padding:2rem;max-width:700px;">
+            <form method="POST" action="{{ url_for('admin.edit_book', book_id=book._id) }}">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Title *</label>
+                        <input type="text" name="title" class="form-control" value="{{ book.title }}" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Author *</label>
+                        <input type="text" name="author" class="form-control" value="{{ book.author }}" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Genre *</label>
+                        <input type="text" name="genre" class="form-control" value="{{ book.genre }}" required />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Year</label>
+                        <input type="number" name="year" class="form-control" value="{{ book.year or '' }}" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">ISBN</label>
+                        <input type="text" name="isbn" class="form-control" value="{{ book.isbn or '' }}" />
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label class="form-label">Cover URL</label>
+                        <input type="url" name="cover_url" class="form-control" value="{{ book.cover_url or '' }}" />
+                    </div>
+                </div>
+                <div class="form-group mb-2">
+                    <label class="form-label">Description *</label>
+                    <textarea name="description" class="form-control" rows="4"
+                        required>{{ book.description }}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                    <a href="{{ url_for('admin.manage_books') }}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+{% endblock %}

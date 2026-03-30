@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}BookNest — Online Book Recommendations{% endblock %}</title>
+  <meta name="description" content="Discover your next favourite book with AI-powered recommendations on BookNest." />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
+</head>
+<body>
+
+{% if not hide_navbar %}
+<nav class="navbar">
+  <a class="navbar-brand" href="{{ url_for('books.index') }}">
+    <span class="brand-icon">📚</span> BookNest
+  </a>
+  <ul class="navbar-nav">
+    {% if session.get('user_id') %}
+      {% if session.get('role') == 'admin' %}
+        <li><a href="{{ url_for('admin.admin_dashboard') }}" class="nav-link">🛡️ Dashboard</a></li>
+        <li><a href="{{ url_for('admin.manage_books') }}" class="nav-link">📖 Books</a></li>
+        <li><a href="{{ url_for('admin.manage_users') }}" class="nav-link">👥 Users</a></li>
+        <li><span class="nav-username">🔐 {{ session.get('username') }}</span></li>
+        <li><a href="{{ url_for('admin.admin_logout') }}" class="nav-link">Logout</a></li>
+      {% else %}
+        <li><a href="{{ url_for('books.dashboard') }}" class="nav-link">🏠 Home</a></li>
+        <li><span class="nav-username">👋 {{ session.get('username') }}</span></li>
+        <li><a href="{{ url_for('auth.logout') }}" class="nav-link">Logout</a></li>
+      {% endif %}
+    {% else %}
+      <li><a href="{{ url_for('auth.login') }}" class="nav-link">Login</a></li>
+      <li><a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Sign Up</a></li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+{# Flash messages #}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="alerts-container">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+      {% if category == 'success' %}✅{% elif category == 'danger' %}❌{% elif category == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+      <span>{{ message }}</span>
+      <button class="alert-close">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set hide_navbar = true %}
+{% block title %}Login — BookNest{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-box fade-in">
+        <div class="auth-logo">
+            <div class="icon">📚</div>
+            <h1>Welcome Back</h1>
+            <p>Sign in to discover your next favourite read</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" autocomplete="on">
+            <div class="form-group">
+                <label class="form-label" for="email">Email Address</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="you@example.com" required
+                    autocomplete="email" />
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
+                    required autocomplete="current-password" />
+            </div>
+
+            <!-- Forgot password link -->
+            <div class="forgot-link">
+                <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg mt-3">
+                🚀 Sign In
+            </button>
+        </form>
+
+        <div class="auth-divider">or</div>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="{{ url_for('auth.register') }}">Create one free</a>
+        </div>
+        <div class="auth-footer mt-1">
+            Admin? <a href="{{ url_for('admin.admin_login') }}">Admin Login →</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .forgot-link {
+        text-align: right;
+        margin-top: 0.25rem;
+        font-size: 0.82rem;
+    }
+
+    .forgot-link a {
+        color: var(--primary, #7c6af7);
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+
+    .forgot-link a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
